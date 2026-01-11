@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wordmaker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#111111" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Wordmaker" />
+
+  <!-- Icons -->
+  <link rel="icon" href="icon-192.png" sizes="192x192" />
+  <link rel="icon" href="icon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
+  <link rel="stylesheet" href="style.css?v=20260111-230819-9000" />
+</head>
+<body>
+  <header>
+    <h1>Wordmaker</h1>
+    <div class="toolbar">
+      <button id="newDoc" type="button">New</button>
+      <button id="saveDoc" type="button">Save</button>
+      <button id="exportTxt" type="button">Export TXT</button>
+      <button id="exportDocx" type="button">Export DOCX</button>
+      <button id="exportPdf" type="button">Export PDF</button>
+      <button id="installBtn" type="button" class="install hidden" aria-hidden="true" title="Install Wordmaker">Install</button>
+      <button id="resetApp" type="button">Reset</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="editor" contenteditable="true" spellcheck="true" aria-label="Document editor">
+      Tap here to start typing ✨
+    </div>
+  </main>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script>
+    // Expose app build version (cache-busting + debugging)
+    window.__WORDMAKER_VERSION__ = "20260111-220831-9937";
+  </script>
+  <script src="boot.js?v=20260111-230819-9000"></script>
+  <script src="script.js?v=20260111-230819-9000"></script>
+</body>
+</html>
