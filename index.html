@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Wordmaker</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0b0f14">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css">
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#0f1620;
+      --panel2:#111b27;
+      --text:#e7eef7;
+      --muted:rgba(231,238,247,.78);
+      --border:rgba(255,255,255,.14);
+      --btn:#121b26;
+      --btnBorder:rgba(255,255,255,.18);
+      --accent:#ff6bd6;
+      --headerH: 112px;
+    }
+    html,body{height:100%;}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:var(--bg);overflow-x:hidden;}
+    body::before{content:"";position:fixed;inset:8px;border-radius:22px;pointer-events:none;z-index:900;border:2px solid color-mix(in srgb, var(--accent) 65%, rgba(255,255,255,.12));box-shadow:0 0 0 6px rgba(0,0,0,.22),0 18px 60px rgba(0,0,0,.35);background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 18%, transparent), transparent) padding-box;}
+    body::after{content:"";position:fixed;inset:14px;border-radius:18px;pointer-events:none;z-index:899;opacity:.6;background:repeating-linear-gradient(135deg,color-mix(in srgb, var(--accent) 18%, transparent) 0 10px,rgba(0,0,0,0) 10px 22px);mix-blend-mode:screen;}
+    header{position:fixed;top:0;left:0;right:0;z-index:1000;background:color-mix(in srgb, var(--bg) 88%, rgba(255,255,255,.03));border-bottom:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px);padding:6px 8px;}
+    .wrap{max-width:1180px;margin:0 auto;}
+    .bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between;}
+    .left,.right{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+    input,select,textarea{background:var(--btn);color:var(--text);border:1px solid var(--btnBorder);border-radius:10px;padding:6px 8px;font-size:13px;outline:none;font-family:inherit;}
+    button{background:var(--btn);color:var(--text);border:1px solid var(--btnBorder);border-radius:10px;padding:6px 8px;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .chip{font-size:11px;border:1px solid var(--btnBorder);padding:4px 8px;border-radius:999px;opacity:.92;background:rgba(255,255,255,.04)}
+    .status{margin-top:6px;font-size:12px;opacity:.85;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;white-space:pre-wrap}
+    main{max-width:1180px;margin:0 auto;padding:calc(var(--headerH) + 14px) 14px 18px;}
+    .ql-toolbar.ql-snow{border-radius:14px 14px 0 0;border:1px solid var(--border);background:color-mix(in srgb, var(--panel) 86%, rgba(255,255,255,.06));}
+    .ql-container.ql-snow{border-radius:0 0 14px 14px;border:1px solid var(--border);border-top:0;background:color-mix(in srgb, var(--panel) 94%, rgba(255,255,255,.03));}
+    .ql-editor{min-height:calc(100vh - var(--headerH) - 170px);padding:18px 16px 80px;font-size:16px;line-height:1.5;color:var(--text);background-image:linear-gradient(to bottom,rgba(255,255,255,0) calc(1120px - 2px),rgba(255,255,255,.14) calc(1120px - 2px),rgba(255,255,255,.14) 1120px);background-size:100% 1120px;background-repeat:repeat;}
+    .installFab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);right:16px;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:color-mix(in srgb, var(--btn) 80%, rgba(255,255,255,.08));box-shadow:0 18px 40px rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:8000}
+    .installFab svg{width:22px;height:22px;opacity:.95}
+    .calcMenu{position:fixed;right:10px;top:calc(var(--headerH) - 6px);width:min(420px, calc(100vw - 20px));background:var(--panel2);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.55);padding:10px;display:none;z-index:8500}
+    .calcGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+    .calcGrid button{padding:10px 0;border-radius:12px}
+    .calcOut{margin-top:8px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;font-size:12px;white-space:pre-wrap;opacity:.9}
+    .divider{height:1px;background:rgba(255,255,255,.12);margin:10px 0}
+    .tapOverlay{position:fixed;inset:calc(var(--headerH) + 8px) 10px 10px 10px;display:flex;align-items:center;justify-content:center;z-index:2000;pointer-events:none}
+    .tapCard{pointer-events:auto;background:color-mix(in srgb, var(--panel) 88%, rgba(255,255,255,.06));border:2px dashed var(--accent);border-radius:20px;padding:22px 18px;max-width:min(520px, 90vw);text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+    .tapCard h2{margin:0 0 8px;font-size:20px}
+    .tapCard p{margin:0;opacity:.9;font-size:14px}
+    .drawerBack{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;z-index:9000}
+    .drawer{position:fixed;right:0;top:0;height:100%;width:min(620px,96vw);background:var(--panel);border-left:1px solid var(--border);display:none;z-index:9001;overflow:auto}
+    .drawerHead{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;border-bottom:1px solid var(--border);background:color-mix(in srgb, var(--panel) 86%, rgba(255,255,255,.06))}
+    .drawerBody{padding:10px}
+    .section{border:1px solid var(--border);border-radius:14px;padding:10px;background:rgba(255,255,255,.02);margin-bottom:10px}
+    .section h3{margin:0 0 8px;font-size:13px}
+    .small{font-size:12px;opacity:.82;line-height:1.35}
+    iframe{width:100%;height:520px;border:1px solid var(--border);border-radius:14px;background:rgba(0,0,0,.2)}
+  </style>
+</head>
+<body>
+  <div id="installFab" class="installFab" title="Install Wordmaker" aria-label="Install Wordmaker">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 3v10" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <path d="M8 11l4 4 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M5 21h14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div class="tapOverlay" id="tapOverlay">
+    <div class="tapCard">
+      <h2>Tap here to start typing ✨</h2>
+      <p>This works like Microsoft Word — just tap the page and begin.</p>
+    </div>
+  </div>
+
+  <header id="hdr">
+    <div class="wrap">
+      <div class="bar">
+        <div class="left">
+          <input id="docTitle" type="text" value="Wordmaker document" />
+          <button id="btnNew">New</button>
+          <button id="btnSave">Save</button>
+          <button id="btnOpen">Open</button>
+          <input id="fileOpen" type="file" accept=".html,.txt,.docx,.rtf,.pdf,.odt,.pages,.doc,application/pdf,application/vnd.oasis.opendocument.text,application/vnd.apple.pages,text/plain,text/rtf,text/html,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" />
+        </div>
+        <div class="right">
+          <select id="skinSel">
+            <option value="bunny" selected>🐰 Bunny</option>
+            <option value="shark">🦈 Shark</option>
+            <option value="tiger">🐯 Tiger</option>
+            <option value="zebra">🦓 Zebra</option>
+            <option value="lion">🦁 Lion</option>
+            <option value="cat">🐱 Cat</option>
+            <option value="dog">🐶 Dog</option>
+          </select>
+          <button id="btnCalc">Calculator ▾</button>
+          <button id="btnPageMode">Page Mode: OFF</button>
+          <button id="btnDocx">Export DOCX</button>
+          <button id="btnPdf">Export PDF</button>
+          <button id="btnPrint">Print</button>
+          <button id="btnTools">Tools</button>
+        </div>
+      </div>
+      <div class="bar" style="margin-top:6px;">
+        <div class="left" style="flex:1;">
+          <input id="headerText" type="text" placeholder="Header (print/PDF)" style="flex:1;min-width:160px;" />
+          <input id="footerText" type="text" placeholder="Footer (print/PDF)" style="flex:1;min-width:160px;" />
+        </div>
+        <div class="right">
+          <span class="chip">Wordmaker</span>
+          <span class="chip">PWA</span>
+          <span class="chip">Open-any-file (best-effort)</span>
+        </div>
+      </div>
+      <div class="status" id="status">Status: starting…</div>
+
+<script>
+(function(){
+  try{
+    var s=document.getElementById('status');
+    if(s) s.textContent='Status: BOOTING… (new build loaded)';
+  }catch(e){}
+})();
+</script>
+
+    </div>
+  </header>
+
+  <div class="calcMenu" id="calcMenu">
+    <div class="small"><b>Calculator</b></div>
+    <input id="calcDisplay" type="text" placeholder="Expression: (24*3)+7/2" style="width:100%;" />
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+      <button id="calcEval">=</button>
+      <button id="calcClear">C</button>
+      <button id="calcBack">⌫</button>
+      <button id="calcAISolve">AI Solve</button>
+    </div>
+    <div class="calcGrid" id="calcKeys"></div>
+    <div class="divider"></div>
+    <div class="small">Paste a word problem:</div>
+    <textarea id="calcProblem" rows="4" style="width:100%;min-height:86px;resize:vertical;margin-top:8px;"></textarea>
+    <button id="calcAISolve2" style="margin-top:8px;width:100%;">AI Solve Problem</button>
+    <div class="divider"></div>
+    <div class="small"><b>AI Mode</b> (open-source)</div>
+    <select id="aiModeSelect" style="width:100%;margin-top:6px;">
+      <option value="fast" selected>Fast (WebLLM Qwen2.5-Math 1.5B)</option>
+      <option value="max">Max Accuracy (GGUF via wllama)</option>
+    </select>
+    <div id="maxModeBox" style="display:none;margin-top:8px;">
+      <div class="small" style="margin-bottom:6px;">GGUF URL (desktop recommended)</div>
+      <input id="ggufUrl" type="text" style="width:100%;" value="https://github.com/bradwillstep/Wordmaker/releases/download/v1/Qwen2.5-Math-7B-Instruct.Q4_K_M.gguf" />
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+        <button id="btnLoadGGUF">Load 7B Model</button>
+        <span class="small" id="ggufStatus">Not loaded</span>
+      </div>
+    </div>
+    <div class="calcOut" id="calcOut"></div>
+  </div>
+
+  <main>
+    <div id="toolbar">
+      <select class="ql-header"><option selected></option><option value="1">H1</option><option value="2">H2</option><option value="3">H3</option></select>
+      <button class="ql-bold"></button><button class="ql-italic"></button><button class="ql-underline"></button>
+      <select class="ql-color"></select><select class="ql-background"></select>
+      <button class="ql-blockquote"></button>
+      <button class="ql-list" value="ordered"></button>
+      <button class="ql-list" value="bullet"></button>
+      <button class="ql-indent" value="-1"></button>
+      <button class="ql-indent" value="+1"></button>
+      <button class="ql-link"></button>
+      <button class="ql-clean"></button>
+    </div>
+    <div id="editor"></div>
+    <div id="pagesHost" style="display:none; max-width:900px; margin:14px auto 0;"></div>
+  </main>
+
+  <div class="drawerBack" id="drawerBack"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawerHead">
+      <strong>Tools</strong>
+      <button id="btnCloseTools">Close</button>
+    </div>
+    <div class="drawerBody">
+      <div class="section">
+        <h3>Embedded AI panel (no key)</h3>
+        <div class="small">Copy selection → paste into the panel → paste output → insert.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <button id="btnCopySelection">Copy Selection</button>
+          <button id="btnCopyAll">Copy Document</button>
+          <button id="btnOpenEmbed">Open AI in new tab</button>
+        </div>
+        <textarea id="embedResult" style="width:100%;min-height:90px;margin-top:8px;" placeholder="Paste AI output here…"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <button id="btnReplaceWithEmbed">Replace Selection</button>
+          <button id="btnInsertEmbed">Insert at Cursor</button>
+        </div>
+        <div style="margin-top:10px;">
+          <iframe id="embedFrame" title="Embedded AI Space"></iframe>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Grammar checker (free)</h3>
+        <div class="small">LanguageTool public endpoint (may rate-limit).</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <button id="btnGrammar">Check Grammar</button>
+          <button id="btnClearIssues">Clear</button>
+        </div>
+        <div id="issues" style="margin-top:8px;"></div>
+      </div>
+
+      <div class="section">
+        <h3>Optional AI writing (BYO key)</h3>
+        <div class="small">Optional, not required for calculator AI.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+          <input id="apiBase" type="text" value="https://api.openai.com/v1/responses" />
+          <input id="apiModel" type="text" value="gpt-4.1-mini" />
+        </div>
+        <input id="apiKey" type="password" placeholder="Paste API key (optional)" style="width:100%;margin-top:8px;" />
+        <textarea id="aiInstruction" style="min-height:90px;margin-top:8px;">Rewrite the selected text to be clearer and more professional while keeping the meaning. Preserve names and facts. Return only the rewritten text.</textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          <button id="btnRewrite" disabled>Rewrite</button>
+          <button id="btnExpand" disabled>Expand</button>
+          <button id="btnSumm" disabled>Summarize</button>
+          <button id="btnInsert" disabled>Continue</button>
+          <button id="btnSaveKey">Save Key</button>
+          <button id="btnForgetKey">Forget Key</button>
+        </div>
+        <div class="small" id="aiNote" style="margin-top:8px;">AI writing disabled (optional).</div>
+      </div>
+    </div>
+  </aside>
+
+  <script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+
+  <script>
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+  </script>
+
+  
+<script>
+/* Wordmaker bootstrap (robust): if anything fails, show error in Status */
+(function(){
+  const $ = (id) => document.getElementById(id);
+  const statusEl = $("status");
+  const hdr = $("hdr");
+
+  function setStatus(s){
+    if (statusEl) statusEl.textContent = "Status: " + s;
+  }
+
+  window.addEventListener("error", (e) => {
+    setStatus("ERROR: " + (e.message || e.error || "unknown"));
+  });
+
+  window.addEventListener("unhandledrejection", (e) => {
+    setStatus("ERROR: " + (e.reason?.message || e.reason || "promise rejected"));
+  });
+
+  function updateHeaderH(){
+    try{
+      const h = hdr ? hdr.getBoundingClientRect().height : 112;
+      document.documentElement.style.setProperty("--headerH", Math.round(h) + "px");
+    }catch{}
+  }
+
+  // Service worker + PDF worker
+  try{
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+    }
+  }catch{}
+
+  // Hide tap overlay
+  const tapOverlay = $("tapOverlay");
+  function hideOverlay(){
+    if (!tapOverlay) return;
+    tapOverlay.style.display = "none";
+    document.removeEventListener("keydown", hideOverlay);
+  }
+  document.addEventListener("keydown", hideOverlay);
+
+  setStatus("loading editor…");
+
+  // Init Quill AFTER DOM is ready and Quill is loaded
+  function init(){
+    try{
+      if (!window.Quill) throw new Error("Quill failed to load (CDN blocked?)");
+      const editorEl = $("editor");
+      if (!editorEl) throw new Error("Missing #editor element");
+      const quill = new Quill("#editor", { theme:"snow", modules:{ toolbar:"#toolbar" } });
+
+      editorEl.addEventListener("pointerdown", () => {
+        try{ quill.focus(); }catch{}
+        hideOverlay();
+      }, {passive:true});
+
+      // Storage
+      const LS_CONTENT="wordmaker_content_v1";
+      const LS_META="wordmaker_meta_v1";
+
+      function saveLocal(){
+        localStorage.setItem(LS_CONTENT, quill.root.innerHTML);
+        localStorage.setItem(LS_META, JSON.stringify({
+          title: $("docTitle")?.value || "Wordmaker document",
+          header: $("headerText")?.value || "",
+          footer: $("footerText")?.value || "",
+          skin: $("skinSel")?.value || "bunny",
+          savedAt: Date.now()
+        }));
+        setStatus("saved locally ✅");
+      }
+
+      function loadLocal(){
+        const meta = localStorage.getItem(LS_META);
+        const html = localStorage.getItem(LS_CONTENT);
+        if (meta){
+          try{
+            const m = JSON.parse(meta);
+            if (m.title && $("docTitle")) $("docTitle").value = m.title;
+            if (m.header !== undefined && $("headerText")) $("headerText").value = m.header;
+            if (m.footer !== undefined && $("footerText")) $("footerText").value = m.footer;
+            if (m.skin && $("skinSel")) $("skinSel").value = m.skin;
+          }catch{}
+        }
+        if (html) quill.root.innerHTML = html;
+      }
+
+      // Autosave debounce
+      let saveT=null;
+      quill.on("text-change", () => {
+        clearTimeout(saveT);
+        saveT = setTimeout(() => { try{ saveLocal(); }catch{} }, 700);
+      });
+
+      // Basic buttons
+      $("btnSave")?.addEventListener("click", () => { try{ saveLocal(); }catch(e){ alert(e.message||e); }});
+      $("btnNew")?.addEventListener("click", () => {
+        if (!confirm("Start a new document?")) return;
+        if ($("docTitle")) $("docTitle").value = "Wordmaker document";
+        quill.setContents([]);
+        saveLocal();
+        setStatus("new document ✅");
+      });
+
+      // Calc dropdown
+      const calcMenu = $("calcMenu");
+      $("btnCalc")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!calcMenu) return;
+        calcMenu.style.display = (calcMenu.style.display === "block") ? "none" : "block";
+      });
+      document.addEventListener("click", (e) => {
+        if (!calcMenu) return;
+        const btn = $("btnCalc");
+        if (!calcMenu.contains(e.target) && e.target !== btn) calcMenu.style.display = "none";
+      });
+
+      function safeEval(expr){
+        if (!expr) return "";
+        if (!/^[0-9\s\+\-\*\/\(\)\.^%]+$/.test(expr)) throw new Error("Only numbers and + - * / ( ) . ^ % allowed.");
+        let e = expr.replace(/\^/g, "**").replace(/(\d+(?:\.\d+)?)%/g, "($1/100)");
+        const v = Function('"use strict"; return ('+e+')')();
+        if (typeof v !== "number" || !isFinite(v)) throw new Error("Invalid result.");
+        return v;
+      }
+
+      const calcKeysHost = $("calcKeys");
+      if (calcKeysHost && calcKeysHost.children.length === 0){
+        ["7","8","9","/","4","5","6","*","1","2","3","-","0",".","(",")","+","^","%"].forEach(k => {
+          const b=document.createElement("button");
+          b.textContent=k;
+          b.addEventListener("click", () => {
+            const d = $("calcDisplay");
+            if (!d) return;
+            d.value += k;
+            d.focus();
+          });
+          calcKeysHost.appendChild(b);
+        });
+      }
+
+      $("calcEval")?.addEventListener("click", () => {
+        try{
+          const v = safeEval(($("calcDisplay")?.value || "").trim());
+          if ($("calcOut")) $("calcOut").textContent = "Result: " + v;
+        }catch(e){
+          if ($("calcOut")) $("calcOut").textContent = "Error: " + (e.message||e);
+        }
+      });
+      $("calcClear")?.addEventListener("click", () => { if ($("calcDisplay")) $("calcDisplay").value=""; if ($("calcOut")) $("calcOut").textContent=""; });
+      $("calcBack")?.addEventListener("click", () => { const d=$("calcDisplay"); if (d) d.value = d.value.slice(0,-1); });
+
+      // Page mode (simple)
+      let pageMode=false;
+      function buildPages(){
+        const host = $("pagesHost");
+        if (!host) return;
+        host.innerHTML = "";
+        const text = quill.getText();
+        const per = 2200;
+        let p=1;
+        for (let i=0;i<text.length;i+=per){
+          const chunk = text.slice(i,i+per).trim();
+          const div=document.createElement("div");
+          div.style.background="rgba(255,255,255,.03)";
+          div.style.border="1px solid rgba(255,255,255,.14)";
+          div.style.borderRadius="14px";
+          div.style.boxShadow="0 18px 50px rgba(0,0,0,.45)";
+          div.style.padding="22px 20px";
+          div.style.minHeight="1120px";
+          div.style.margin="0 auto 14px";
+          div.innerHTML = "<div style='opacity:.65;font-size:11px;float:right'>Page "+p+"</div><div style='white-space:pre-wrap'></div>";
+          div.querySelector("div:last-child").textContent = chunk;
+          host.appendChild(div);
+          p++;
+        }
+      }
+      $("btnPageMode")?.addEventListener("click", () => {
+        pageMode = !pageMode;
+        const b = $("btnPageMode");
+        if (b) b.textContent = "Page Mode: " + (pageMode ? "ON" : "OFF");
+        if ($("pagesHost")) $("pagesHost").style.display = pageMode ? "block" : "none";
+        if ($("editor")) $("editor").style.display = pageMode ? "none" : "block";
+        if (pageMode) buildPages();
+      });
+      quill.on("text-change", () => { if (pageMode) buildPages(); });
+
+      // Tools drawer open/close
+      const drawerBack = $("drawerBack");
+      const drawer = $("drawer");
+      $("btnTools")?.addEventListener("click", () => { if (drawerBack) drawerBack.style.display="block"; if (drawer) drawer.style.display="block"; });
+      $("btnCloseTools")?.addEventListener("click", () => { if (drawerBack) drawerBack.style.display="none"; if (drawer) drawer.style.display="none"; });
+      drawerBack?.addEventListener("click", () => { drawerBack.style.display="none"; if (drawer) drawer.style.display="none"; });
+
+      // Embedded AI iframe (optional)
+      const embedFrame = $("embedFrame");
+      if (embedFrame) embedFrame.src = "https://huggingface.co/spaces/Timemaster/grammar-fixer";
+
+      // Open button triggers picker (import is handled in original scratch, but keep at least picker)
+      $("btnOpen")?.addEventListener("click", () => $("fileOpen")?.click());
+
+      // Install prompt
+      const fab = $("installFab");
+      let deferred = null;
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferred = e;
+        if (fab) fab.style.display = "flex";
+      });
+      window.addEventListener("appinstalled", () => { deferred=null; if (fab) fab.style.display="none"; });
+      fab?.addEventListener("click", async () => {
+        if (deferred){
+          deferred.prompt();
+          try{ await deferred.userChoice; }catch{}
+          deferred=null;
+        } else {
+          alert("To install Wordmaker: Chrome menu (⋮) → Install app / Add to Home screen.");
+        }
+      });
+
+      // Final init steps
+      loadLocal();
+      updateHeaderH();
+      setTimeout(updateHeaderH, 80);
+      setStatus("ready ✅ — tap the page to type");
+    }catch(e){
+      setStatus("ERROR: " + (e.message || e));
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+</body>
+</html>
