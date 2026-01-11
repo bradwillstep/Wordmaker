@@ -1,44 +1,70 @@
-# Wordmaker (Full App Build)
+# Wordmaker
 
-This is the **full Wordmaker** (not a tiny demo). It includes:
+Wordmaker is a lightweight, browser-based writing app designed to work like a simplified Microsoft Word — fully client-side, GitHub Pages–friendly, and offline-capable.
 
-- Rich text toolbar (bold/italic/underline/strike)
-- Fonts + font size
-- Align (L/C/R/Justify)
-- Bullets/numbering + indent/outdent
-- Page Mode (Letter-sized paper look)
-- Save/load to browser + portable `.wm.json` open/save
-- Find/Replace (basic)
-- Word/character count
-- **Real export: DOCX + PDF** (via client-side libraries)
-- PWA install button + “Add to Home Screen”
-- Offline-ready foundation (service worker caches core + export libs)
+No accounts. No servers. Your writing stays on your device.
 
-## Files you must upload to your GitHub repo root
+---
 
-- `index.html`
-- `style.css`
-- `script.js`
-- `manifest.webmanifest`
-- `service-worker.js`
-- `icon-192.png`
-- `icon-512.png`
+## Files
 
-## Notes about DOCX/PDF export
+This project runs entirely in the browser and uses only static files:
 
-Exports are generated in the browser using these libraries:
+- `index.html` — App shell + UI
+- `style.css` — Styling
+- `script.js` — Core editor logic (toolbar, saving, export, PWA)
+- `ai.js` — **Open-source AI tools (writer, calculator, grammar)**
+- `manifest.webmanifest` — PWA configuration
+- `service-worker.js` — Offline cache + update control
+- `icon-192.png`, `icon-512.png` — App icons
 
-- `html-to-docx`
-- `html2canvas`
-- `jspdf`
+---
 
-They are loaded from jsDelivr and cached by the service worker after first load.
+## Features
 
-## Versioning
+### Core editor
+- Rich text toolbar (bold, italic, underline, strike)
+- Fonts + font sizes
+- Alignment (left, center, right, justify)
+- Lists, indent/outdent
+- Page Mode (letter-style paper view)
+- Undo / redo
+- Word & character count
+- Autosave (localStorage)
+- Portable open/save (`.wm.json`)
+- Print
 
-This build is auto-versioned:
+### Export
+- **DOCX** (real Word documents)
+- **PDF**
 
-- CSS/JS are loaded with `?v=20260111-221352-4061`
-- Service worker cache name includes `20260111-221352-4061`
+### PWA
+- “Add to Home Screen”
+- Fullscreen app (no browser chrome)
+- Offline-ready
+- Auto-update with forced refresh when a new version is deployed
 
-Build version: `20260111-221352-4061`
+---
+
+## Open-Source AI Tools (Local, In-Browser)
+
+Wordmaker includes optional AI tools that run **entirely in the browser** using open-source projects.
+
+No cloud APIs. No data leaves your device.
+
+### AI Writer
+- Generate paragraphs, rewrite text, continue writing
+- Uses a small open-source language model via `transformers.js`
+
+### AI Calculator
+- Natural-language math
+- Step-by-step explanations
+
+### AI Spellcheck & Grammar
+- Grammar, spelling, and style suggestions
+- Runs offline using WebAssembly
+
+### Technologies used
+- **Transformers.js** (browser inference)
+- **Qwen2.5-0.5B-Instruct (ONNX)** — small open-source LLM
+- **Harper** — open-source grammar & spell
