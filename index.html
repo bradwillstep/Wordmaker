@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wordmaker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#111111" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Wordmaker" />
+
+  <!-- Icons (repo uses /icons folder) -->
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192" />
+  <link rel="icon" href="icons/icon-512.png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <link rel="stylesheet" href="style.css?v=20260111-231936-1223" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Wordmaker</h1>
+    <div class="toolbar">
+      <button id="newDoc" type="button">New</button>
+      <button id="saveDoc" type="button">Save</button>
+      <button id="exportTxt" type="button">Export TXT</button>
+      <button id="exportDocx" type="button">Export DOCX</button>
+      <button id="exportPdf" type="button">Export PDF</button>
+      <button id="aiBtn" type="button" class="ai">AI ✨</button>
+      <button id="resetApp" type="button">Reset</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="editor" contenteditable="true" spellcheck="true" aria-label="Document editor">
+      Tap here to start typing ✨
+    </div>
+  </main>
+
+  <!-- AI Dialog -->
+  <dialog id="dlgAI" class="dlg">
+    <div class="dlg__body">
+      <div class="dlg__title">AI Tools (Open Source, Local-in-Browser)</div>
+
+      <div class="tabs">
+        <button id="tabWriter" type="button" class="tab active">Writer</button>
+        <button id="tabCalc" type="button" class="tab">Calculator</button>
+        <button id="tabGrammar" type="button" class="tab">Spell/Grammar</button>
+      </div>
+
+      <div class="hint">
+        First run downloads model files and caches them on your device. After that, it’s faster and can work offline.
+      </div>
+
+      <label class="field">
+        <span id="aiLabel">Instruction</span>
+        <textarea id="aiInput" class="input" rows="4" placeholder="Write a paragraph about..."></textarea>
+      </label>
+
+      <label class="check">
+        <input id="useSelection" type="checkbox" checked />
+        <span>Use selected text as context</span>
+      </label>
+
+      <div class="actions">
+        <button id="aiRun" type="button" class="primary">Run</button>
+        <button id="aiInsert" type="button">Insert</button>
+        <button id="aiReplace" type="button">Replace selection</button>
+        <button id="aiClose" type="button">Close</button>
+      </div>
+
+      <div id="aiStatus" class="status">Ready.</div>
+
+      <label class="field">
+        <span>Output</span>
+        <textarea id="aiOutput" class="input" rows="8" placeholder="AI output appears here..."></textarea>
+      </label>
+
+      <div id="lintWrap" class="lintWrap hidden">
+        <div class="lintTitle">Suggestions</div>
+        <div id="lints" class="lints">No suggestions yet.</div>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <script>window.__WORDMAKER_VERSION__="20260111-231936-1223";</script>
+  <script src="boot.js?v=20260111-231936-1223"></script>
+  <script type="module" src="ai.js?v=20260111-231936-1223"></script>
+  <script src="script.js?v=20260111-231936-1223"></script>
+</body>
+</html>
